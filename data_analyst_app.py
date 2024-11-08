@@ -1,5 +1,5 @@
 # Install the required packages first by running:
-# !pip install streamlit pandas matplotlib seaborn plotly openpyxl scikit-learn
+# !pip install streamlit pandas matplotlib seaborn plotly openpyxl
 
 import streamlit as st
 import pandas as pd
@@ -7,128 +7,12 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.linear_model import LinearRegression
-from sklearn.cluster import KMeans
-from scipy.stats import zscore
-from datetime import datetime
 
-st.title("Data Analyst App with Advanced Features")
+st.title("Data Analyst App")
 
 # Step 1: Upload the file
 uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"])
 
-# Function: Data Cleaning Pipeline
-def data_cleaning(df):
-    # Handling missing values by filling with median or mode based on data type
-    for col in df.columns:
-        if df[col].dtype == 'object':
-            df[col].fillna(df[col].mode()[0], inplace=True)
-        else:
-            df[col].fillna(df[col].median(), inplace=True)
-    
-    # Outlier treatment using Z-score for numerical data
-    num_cols = df.select_dtypes(include=[np.number]).columns
-    df = df[(np.abs(zscore(df[num_cols])) < 3).all(axis=1)]
-    
-    return df
-
-# Function: Exploratory Data Analysis
-def exploratory_data_analysis(df):
-    st.write("## Summary Statistics")
-    st.write(df.describe())
-    
-    st.write("## Univariate Analysis")
-    for col in df.select_dtypes(include=[np.number]).columns:
-        st.write(f"Distribution of {col}")
-        fig, ax = plt.subplots()
-        sns.histplot(df[col], kde=True, ax=ax)
-        st.pyplot(fig)
-
-    st.write("## Bivariate Analysis")
-    num_cols = df.select_dtypes(include=[np.number]).columns
-    if len(num_cols) >= 2:
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.heatmap(df[num_cols].corr(), annot=True, cmap="coolwarm", ax=ax)
-        st.pyplot(fig)
-    else:
-        st.write("Not enough numerical columns for Bivariate Analysis.")
-
-# Function: Advanced Analysis
-def advanced_analysis(df):
-    # Correlation Heatmap
-    st.write("### Correlation Analysis")
-    if st.checkbox("Show correlation heatmap"):
-        corr = df.corr()
-        fig, ax = plt.subplots(figsize=(10, 8))
-        sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax)
-        st.pyplot(fig)
-
-    # Feature Engineering
-    st.write("### Feature Engineering")
-    date_columns = df.select_dtypes(include=['datetime', 'object']).columns.tolist()
-    for col in date_columns:
-        try:
-            df[col] = pd.to_datetime(df[col])
-            st.write(f"Date feature engineering on: {col}")
-            df[f"{col}_year"] = df[col].dt.year
-            df[f"{col}_month"] = df[col].dt.month
-            df[f"{col}_day"] = df[col].dt.day
-            df[f"{col}_weekday"] = df[col].dt.weekday
-        except Exception as e:
-            st.write(f"Skipping column {col} for date parsing. Error: {e}")
-
-    # Predictive Modeling
-    st.write("### Predictive Modeling (Simple Linear Regression)")
-    target_col = st.selectbox("Select Target Column for Prediction", df.select_dtypes(include=np.number).columns)
-    if target_col:
-        feature_cols = st.multiselect("Select Feature Columns for Prediction", 
-                                      df.select_dtypes(include=np.number).drop(columns=[target_col]).columns)
-        if feature_cols:
-            X = df[feature_cols]
-            y = df[target_col]
-            model = LinearRegression()
-            model.fit(X, y)
-            predictions = model.predict(X)
-            st.write("Prediction Results")
-            st.write(pd.DataFrame({"Actual": y, "Predicted": predictions}))
-
-    # Clustering Analysis
-    st.write("### Clustering Analysis")
-    n_clusters = st.slider("Select number of clusters", 2, 10, 3)
-    if st.button("Perform Clustering"):
-        scaler = StandardScaler()
-        data_scaled = scaler.fit_transform(df.select_dtypes(include=np.number))
-        kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(data_scaled)
-        df['Cluster'] = kmeans.labels_
-        st.write("Clustered Data")
-        st.write(df.head())
-        fig = px.scatter(df, x=feature_cols[0], y=feature_cols[1], color="Cluster", title="Clustering Analysis")
-        st.plotly_chart(fig)
-
-    # Time-Series Decomposition
-    st.write("### Time-Series Decomposition")
-    date_col = st.selectbox("Select Date Column for Time Series Analysis", date_columns)
-    time_series_col = st.selectbox("Select Column for Trend Analysis", df.select_dtypes(include=np.number).columns)
-    if date_col and time_series_col:
-        df[date_col] = pd.to_datetime(df[date_col])
-        df.set_index(date_col, inplace=True)
-        st.line_chart(df[time_series_col])
-
-# Function: Chat Assistant
-def chat_assistant(query):
-    response = ""
-    if "outliers" in query.lower():
-        response = "For outlier treatment, you can use IQR or Z-score methods. Outliers can affect statistical accuracy."
-    elif "correlation" in query.lower():
-        response = "Use correlation analysis to find relationships between numerical variables. High correlation indicates potential predictive relationships."
-    elif "model" in query.lower():
-        response = "Try building predictive models with linear regression or decision trees for numerical data."
-    else:
-        response = "I'm here to help with questions on data analysis steps, outliers, correlations, or model recommendations!"
-    return response
-
-# Main Pipeline Execution
 if uploaded_file is not None:
     # Step 2: Load the data
     try:
@@ -139,41 +23,108 @@ if uploaded_file is not None:
         st.write("Data Loaded Successfully!")
     except Exception as e:
         st.write("Error loading data:", e)
-    
-    # Step 3: Data Cleaning
-    st.subheader("Data Cleaning Pipeline")
-    data = data_cleaning(data)
-    st.write("Data after Cleaning:")
+
+    # Display the first few rows of the data
+    st.subheader("Raw Data Preview")
     st.write(data.head())
 
-    # Step 4: Exploratory Data Analysis
-    st.subheader("Exploratory Data Analysis")
-    exploratory_data_analysis(data)
+    # Step 3: Data Cleaning
+    st.subheader("Data Cleaning")
 
-    # Step 5: Advanced Analysis
-    st.subheader("Advanced Data Analysis")
-    advanced_analysis(data)
+    # Missing value treatment
+    st.write("### Missing Value Treatment")
+    if st.checkbox("Show missing values by column"):
+        st.write(data.isnull().sum())
 
-    # Chat Assistant
-    st.sidebar.subheader("Chatbot Assistant")
-    query = st.sidebar.text_input("Ask the assistant:")
-    if st.sidebar.button("Get Recommendation"):
-        st.sidebar.write(chat_assistant(query))
+    missing_value_option = st.selectbox("Select how to handle missing values:", 
+                                        ("Drop rows", "Fill with mean", "Fill with median", "Fill with mode"))
+    if missing_value_option == "Drop rows":
+        data = data.dropna()
+    elif missing_value_option == "Fill with mean":
+        data = data.fillna(data.mean())
+    elif missing_value_option == "Fill with median":
+        data = data.fillna(data.median())
+    elif missing_value_option == "Fill with mode":
+        data = data.fillna(data.mode().iloc[0])
+    
+    st.write("Data after Missing Value Treatment")
+    st.write(data.head())
 
+    # Outlier treatment
+    st.write("### Outlier Treatment")
+    numeric_cols = data.select_dtypes(include=np.number).columns.tolist()
+    if st.checkbox("Show outliers using IQR method"):
+        for col in numeric_cols:
+            Q1 = data[col].quantile(0.25)
+            Q3 = data[col].quantile(0.75)
+            IQR = Q3 - Q1
+            outliers = data[((data[col] < (Q1 - 1.5 * IQR)) | (data[col] > (Q3 + 1.5 * IQR)))]
+            st.write(f"{col}: {len(outliers)} outliers")
+
+    outlier_option = st.selectbox("Select outlier handling method:", ("None", "Remove", "Cap"))
+    if outlier_option == "Remove":
+        for col in numeric_cols:
+            Q1 = data[col].quantile(0.25)
+            Q3 = data[col].quantile(0.75)
+            IQR = Q3 - Q1
+            data = data[~((data[col] < (Q1 - 1.5 * IQR)) | (data[col] > (Q3 + 1.5 * IQR)))]
+    elif outlier_option == "Cap":
+        for col in numeric_cols:
+            Q1 = data[col].quantile(0.25)
+            Q3 = data[col].quantile(0.75)
+            IQR = Q3 - Q1
+            lower_cap = Q1 - 1.5 * IQR
+            upper_cap = Q3 + 1.5 * IQR
+            data[col] = np.where(data[col] < lower_cap, lower_cap, data[col])
+            data[col] = np.where(data[col] > upper_cap, upper_cap, data[col])
+
+    st.write("Data after Outlier Treatment")
+    st.write(data.head())
+
+    # Step 4: Summary Statistics
+    st.subheader("Summary Statistics")
+    st.write(data.describe())
+
+    # Step 5: Univariate Analysis
+    st.subheader("Univariate Analysis")
+    column = st.selectbox("Select a column for univariate analysis", data.columns)
+    if column:
+        st.write("Histogram")
+        fig, ax = plt.subplots()
+        sns.histplot(data[column], kde=True, ax=ax)
+        st.pyplot(fig)
+        
+        st.write("Boxplot")
+        fig, ax = plt.subplots()
+        sns.boxplot(x=data[column], ax=ax)
+        st.pyplot(fig)
+
+    # Step 6: Bivariate Analysis
+    st.subheader("Bivariate Analysis")
+    col1 = st.selectbox("Select first column for bivariate analysis", data.columns)
+    col2 = st.selectbox("Select second column for bivariate analysis", data.columns)
+    if col1 and col2:
+        st.write("Scatter plot")
+        fig = px.scatter(data, x=col1, y=col2)
+        st.plotly_chart(fig)
+
+    # Step 7: Multivariate Analysis
+    st.subheader("Multivariate Analysis")
+    multivariate_cols = st.multiselect("Select columns for pairplot", data.columns)
+    if multivariate_cols:
+        st.write("Pairplot")
+        fig = sns.pairplot(data[multivariate_cols])
+        st.pyplot(fig)
+
+    # Step 8: Trend and Pattern Analysis (if date column is present)
+    date_cols = data.select_dtypes(include=[np.datetime64]).columns.tolist()
+    if date_cols:
+        date_col = st.selectbox("Select a date column for trend analysis", date_cols)
+        if date_col:
+            data[date_col] = pd.to_datetime(data[date_col])
+            st.write("Line plot of data over time")
+            trend_col = st.selectbox("Select a column to observe trend", numeric_cols)
+            fig = px.line(data, x=date_col, y=trend_col)
+            st.plotly_chart(fig)
 else:
     st.write("Please upload a CSV or Excel file to proceed.")
-
-
-### Explanation of the Pipeline
-
-1. **Data Cleaning Pipeline**: This step handles missing values and outliers in one function, `data_cleaning()`.
-2. **Exploratory Data Analysis**: The `exploratory_data_analysis()` function generates summary statistics, univariate, and bivariate analyses to understand data distribution and relationships.
-3. **Advanced Analysis**: The `advanced_analysis()` function includes correlation heatmaps, feature engineering, predictive modeling, clustering, and time-series decomposition.
-4. **Chat Assistant**: The `chat_assistant()` function provides responses based on user queries for quick guidance.
-
-### Running the App
-
-Save the code to a file, for instance, `data_analyst_app.py`, and then run:
-
-
-This pipeline will let you analyze, visualize, and gain insights from your data in one integrated application.
