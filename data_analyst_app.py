@@ -1,18 +1,3 @@
-Here's the final code for your Data Analyst app in Streamlit, consolidated into one place and ready to run. Make sure you have all necessary libraries installed using:
-
-```bash
-pip install streamlit pandas numpy seaborn matplotlib plotly openpyxl scikit-learn
-```
-
-After installing, save the code below as `data_analyst_app.py` and run it using:
-
-```bash
-streamlit run data_analyst_app.py
-```
-
-### Final Code
-
-```python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -171,18 +156,3 @@ if uploaded_file is not None:
 
 else:
     st.write("Please upload a CSV or Excel file to proceed.")
-```
-
-### Explanation
-1. **File Upload**: Accepts CSV or Excel files.
-2. **Data Cleaning**: Handles missing values and removes outliers.
-3. **EDA**: Provides summary statistics and both univariate and bivariate analyses.
-4. **Advanced Analysis**:
-   - **Correlation Heatmap**
-   - **Feature Engineering** on date columns.
-   - **Predictive Modeling** with linear regression.
-   - **Clustering** analysis with K-means.
-   - **Time-Series Decomposition** for trend analysis.
-5. **Chat Assistant**: Provides recommendations based on analysis-related queries. 
-
-This should now run without issues. Let me know if you encounter any further errors!
